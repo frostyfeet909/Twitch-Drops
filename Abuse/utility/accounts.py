@@ -1,5 +1,6 @@
 # Functionallity for working with groups of Account's
 import os
+import account
 from os import path
 
 
@@ -10,7 +11,8 @@ def get_accounts():
         -> accounts
     """
     accounts = []
-    folder = path.join("..", "resources", "users")
+    folder = path.join(path.dirname(path.realpath(__file__)),
+                       "..", "resources", "users")
 
     if not path.isdir(folder):
         print("[!!] No users")
