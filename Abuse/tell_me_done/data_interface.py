@@ -3,7 +3,6 @@ from os.path import join, dirname, realpath, isfile, isdir
 from os import mkdir
 from json import load as json_load
 from json import dump as json_dump
-from getpass import getpass
 import threading
 
 # Make threading safe
@@ -27,10 +26,10 @@ def request_keys(account_SID=True, auth_token=True, phone_number=True):
 
     if auth_token:
         print("Twilio authentication token:")
-        auth_token = getpass(prompt='>> ')
+        auth_token = input(">> ")
 
     if phone_number:
-        print("Twili phone number:")
+        print("Twilio phone number:")
         phone_number = input(">> ")
 
     save_keys(account_SID, auth_token, phone_number)
