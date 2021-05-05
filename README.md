@@ -6,10 +6,10 @@ Allows for multiple accounts to be processed simultaneously with persistant stor
 ## Installation
 
 1. Install the latest stable version of [python3](https://www.python.org/downloads/).
-2. Install the remaining packages in requirements and setup the file strucutre by running `install_requirements`:
+2. Install the remaining packages in requirements and setup the file structure by running `install_requirements.py`:
 
    ```bash
-   python install_requirements
+   python install_requirements.py
    ```
 
 3. Install the latest stable version of the selenium [chrome webdriver](https://chromedriver.chromium.org/downloads) and place it in `Abuse\resources\webdrivers`.
