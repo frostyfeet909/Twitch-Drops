@@ -265,8 +265,8 @@ class Stream(Twitch):
 
     def __init__(self, user, drops_available=None, headless=True, chat_on=False):
         Twitch.__init__(self, user, headless)
-        # url for Smite channels with drops
         self.drops = drops_available
+        # URL for directory of droppable streams
         self.url = "https://www.twitch.tv/directory/game/SMITE/tags/c2542d6d-cd10-4532-919b-3d19f30a768b"
         self.chat = chat_on
 

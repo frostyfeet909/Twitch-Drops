@@ -57,7 +57,11 @@ class Account:
         Create a fresh account (or overwrite old account with same username)
         """
         self.password = password
+
+        if phone_number == "":
+            phone_number = None
         self.phone = phone_number
+
         self.admin = is_admin
         self.__save()
 

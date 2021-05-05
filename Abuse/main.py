@@ -5,6 +5,8 @@ def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
     """
     Thread and queue people
         threads - No. of threads : Integer > 0
+        shutdown_on_finish - Should the system shutdown on end : Boolean
+        alert_at_end - Should admins be notified at end of program : Boolean
     """
     import queue
     import thread_person
@@ -13,6 +15,10 @@ def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
     from os import path
     from utility import accounts
 
+    headless = False  # Change this to hide/show the Twitch windows
+    auto_claim = True  # Might be a bug - don't auto claim whilst playing smite
+    notifications = True  # Turn off if you do not have Twilio
+
     # Setup queue
     people_queue = queue.Queue()
 
@@ -20,7 +26,8 @@ def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
 
     # Setup threads
     for _ in range(threads):
-        t = thread_person.Thread_person(people_queue)
+        t = thread_person.Thread_person(
+            people_queue, headless, auto_claim, notifications)
         t.setDaemon(True)
         t.start()
 
@@ -33,7 +40,7 @@ def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
     # After queue processed notify admins and shutdown
     people_queue.join()
 
-    if alert_at_end:
+    if alert_at_end and notifications:
         from tell_me_done import sender
         admin_alert = sender.Notifier()
         admin_alert.notify(message="All people processed", admin_only=True)

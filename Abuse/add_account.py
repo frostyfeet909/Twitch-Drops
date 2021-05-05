@@ -15,7 +15,8 @@ def add_account(user_info=None):
         print("Password: ")
         user_info.append(input(">> "))
         print("Are they an admin (True/False): ")
-        user_info.append(input(">> "))
+        user_info.append(True if input(">> ").lower().strip()
+                         == "true" else False)
         print("Phone number:")
         user_info.append(input(">> "))
 

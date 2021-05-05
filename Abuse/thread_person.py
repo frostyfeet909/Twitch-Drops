@@ -12,32 +12,32 @@ class Thread_person(threading.Thread):
         q - Queue of people to process : Queue
     """
 
-    def __init__(self, q):
+    def __init__(self, q, headless, auto_claim, notifications):
         threading.Thread.__init__(self)
         self.queue = q
+        self.headless = headless
+        self.auto_claim = auto_claim
+        self.notifications = notifications
 
     def run(self):
         """
         Process the next person by starting a stream and inventory for them
         """
         while True:
-            headless = False  # Change this to hide/show the Twitch windows
-            auto_claim = True  # Might be a bug - don't auto claim whilst playing smite
-
             user_account = self.queue.get()
 
             print(user_account.username, "-", "[*] Threading.")
 
-            if user_account.phone != None:
+            if user_account.phone != None and self.notifications:
                 person_alert = sender.Notifier()
                 notify = True
             else:
                 notify = False
 
             drops = threading.Event()
-            stream = twitch.Stream(user_account, drops, headless=headless)
+            stream = twitch.Stream(user_account, drops, headless=self.headless)
             inv = twitch.Inventory(
-                user_account, drops, auto_claim=auto_claim, notify_on_claim=notify, headless=headless)
+                user_account, drops, auto_claim=self.auto_claim, notify_on_claim=notify, headless=self.headless)
 
             stream.start()
             inv.start()
