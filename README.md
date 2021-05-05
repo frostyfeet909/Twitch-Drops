@@ -1,0 +1,35 @@
+# Abuse Surveys
+
+A set of OOP python programs to automatically claim an unamed games drops through twitch automatically.\
+Allows for multiple accounts to be processed simultaneously with persistant storage of cookies annd notfications on completion as well as individual drops via text message.
+
+## Installation
+
+1. Install the latest stable version of [python3](https://www.python.org/downloads/).
+2. Install the remaining packages in requirements and setup the file strucutre by running `install_requirements`:
+
+   ```bash
+   python install_requirements
+   ```
+
+3. Install the latest stable version of the selenium [chrome webdriver](https://chromedriver.chromium.org/downloads) and place it in `Abuse\resources\webdrivers`.
+4. (Optional) If you have notifcations set on then on first run you will be prompted for your twilio information which can be set up at https://www.twilio.com/try-twilio.
+
+## Usage
+
+1. First add a user account for each user.
+   ```bash
+   python add_account.py
+   # OR
+   python add_account.py 'username' 'password' 'is_admin(True/False)' 'phone number'
+   ```
+2. Change the flags in `Abuse\main.py Line:18/19/20` if you want the twitch tabs to not be shown, you want to turn auto claim off or you want to turn notifications off.
+3. WARNING if you do not have Twilio then turn notifcations off.
+4. Run for all stored users.
+   ```bash
+   python main.py
+   ```
+
+## License
+
+me no know
