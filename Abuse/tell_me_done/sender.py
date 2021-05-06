@@ -79,7 +79,7 @@ class Notifier:
         print("<< Message sent to %s" %
               (user.username if user.username is not None else user.phone))
         if user.username is not None:
-            message = user.name + " " + message
+            message = user.username + " " + message
 
         self.client.messages.create(body=message,
                                     from_=self.twilio_number,
