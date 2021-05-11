@@ -40,6 +40,8 @@ def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
     # After queue processed notify admins and shutdown
     people_queue.join()
 
+    print("[*] Done")
+
     if alert_at_end and notifications:
         from tell_me_done import sender
         admin_alert = sender.Notifier()
