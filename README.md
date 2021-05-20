@@ -1,4 +1,4 @@
-# Abuse Surveys
+# Twitch Drops
 
 A set of OOP python programs to automatically claim an unamed games drops through twitch automatically.\
 Allows for multiple accounts to be processed simultaneously with persistant storage of cookies annd notfications on completion as well as individual drops via text message.
