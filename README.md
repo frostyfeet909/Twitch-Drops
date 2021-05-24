@@ -39,5 +39,5 @@ me no know
 - Bug fixes
     - Accept mature audience streams
     - Do something with Amazon watch party streams, stems from some streamers not correctly categorising their streams
-    - Possible bug when checking if there are any redeemable rewards left
+    - Possible bug when checking if there are any redeemable rewards left, occurs after a connection error
 - Add a GUI
