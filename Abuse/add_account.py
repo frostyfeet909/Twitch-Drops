@@ -1,4 +1,4 @@
-# Add a new user account from CMD
+# Add a new user account from CLI
 import account
 import twitch
 import phonenumbers
@@ -6,15 +6,27 @@ from utility import accounts
 
 
 def verify_account(username, password):
+    """
+    Verify the username and password are from a valid Twitch account
+        username,password - Username and password pair : String
+        username,password -> Bool
+    """
     print("[*] Verifying twitch account")
+    # Create temporary account with associated username,password
     temp_account = account.Account(username)
     temp_account.create(password, temporary=True)
 
+    # Verify through Twitch login
     twitch_page = twitch.Twitch(temp_account)
     return twitch_page.run()
 
 
 def verify_phone_number(phone_number):
+    """
+    Verify phone_number is a valid phone number
+        phone_number - Phone number to verify : String
+        phone_number -> Bool
+    """
     print("[*] Verifying phone number")
     try:
         number = phonenumbers.parse(phone_number)
@@ -26,8 +38,8 @@ def verify_phone_number(phone_number):
 
 def add_account(user_info=None):
     """
-    Create a new account - May be called from CMD
-        user_info - [username, password, is_admin, phone_number] : Array
+    Create a new account all user info is verified before saving - May be called from CLI
+        user_info - [username, password, is_admin, phone_number] Only required fields are username and password: Array
     """
     if user_info == None:
         user_info = []
@@ -36,10 +48,10 @@ def add_account(user_info=None):
         user_info.append(input(">> "))
         print("Password: ")
         user_info.append(input(">> "))
-        print("Are they an admin (True/False): ")
+        print("Are they an admin (True/False)(May be left empty): ")
         user_info.append(True if input(">> ").lower().strip()
                          == "true" else False)
-        print("Phone number:")
+        print("Phone number (May be left empty):")
         user_info.append(input(">> "))
 
         if user_info[3] != "":
