@@ -7,7 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.common import action_chains
 from selenium.webdriver.common import keys
 from selenium.webdriver.chrome import options
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException, TimeoutException
 import threading
 import account
 from utility import time_lock
@@ -91,6 +92,7 @@ class Twitch(threading.Thread):
         chrome_options = options.Options()
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--mute-audio")
 
         # Need not headless for login
         if not cannot_headless and self.headless:
@@ -247,14 +249,14 @@ class Twitch(threading.Thread):
         Check need to verify not a robot :3
             -> Bool
         """
-        for _ in range(0, 2):
-            try:
-                self.driver.find_element_by_id('FunCaptcha')
-                return True
-            except NoSuchElementException:
-                time.sleep(5)
+        # Wait 10 seconds incase page isn't fully loaded
+        try:
+            WebDriverWait(self.driver, 10).until(
+                lambda d: d.find_element_by_id('FunCaptcha'))  # not tested
+        except TimeoutException:
+            return False
 
-        return False
+        return True
 
     def _find_element_xpath(self, xpath):
         """
@@ -263,15 +265,14 @@ class Twitch(threading.Thread):
             element - Found element : Element?
             xpath -> element
         """
-        # Try and wait twice - maybe slow connection or ad etc.
-        for _ in range(0, 2):
-            try:
-                element = self.driver.find_element_by_xpath(xpath)
-                return element
-            except NoSuchElementException:
-                time.sleep(5)
+        # Wait 10 seconds incase page isn't fully loaded
+        try:
+            element = WebDriverWait(self.driver, 10).until(
+                lambda d: d.find_element_by_xpath(xpath))
+        except TimeoutException:
+            element = None
 
-        return None
+        return element
 
     def _click_element_xpath(self, xpath):
         """
@@ -283,7 +284,13 @@ class Twitch(threading.Thread):
 
         if element != None:
             self.lock.acquire()
-            element.click()
+
+            try:
+                element.click()
+            except ElementNotInteractableException:
+                self.lock.release()
+                return False
+
             self.lock.release()
             return True
 
@@ -334,7 +341,6 @@ class Stream(Twitch):
         """
         Optimise current stream to lower resources
         """
-        self.__mute()
         self.__lower_quality()
 
         if not self.chat:
@@ -379,16 +385,6 @@ class Stream(Twitch):
         self._click_element_xpath(
             "//div[@class='claimable-bonus__icon tw-flex']")
 
-    def __mute(self):
-        """
-        Mute stream
-        """
-        mute = action_chains.ActionChains(self.driver)
-        mute.send_keys("m")
-        self.lock.acquire()
-        mute.perform()
-        self.lock.release()
-
     def __lower_quality(self, quality=None):
         """
         Lower quality of stream to quality otherwise lowest option
@@ -416,7 +412,7 @@ class Stream(Twitch):
         Close stream chat
         """
         self._click_element_xpath(
-            "//div[@data-test-selector='right-column-content__toggle'][contains(@class, 'expanded')]")
+            "//div[@data-a-target='right-column-chat-bar']//button[@data-a-target='right-column__toggle-collapse-btn']")
 
 
 class Inventory(Twitch):
@@ -519,6 +515,12 @@ class Inventory(Twitch):
         if self._find_element_xpath("//div[@data-test-selector='DropsCampaignInProgressRewards-container']//img[@class='inventory-drop-image inventory-opacity-2 tw-image']") == None:
             print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
                   "[*] No more drops left.")
+
+            with open("log.txt", "w") as file:
+                file.write(self.driver.page_source)
+
+            input("WAITING >>>> ")
+
             self.drops.set()
             return False
         else:
