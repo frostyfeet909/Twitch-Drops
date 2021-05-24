@@ -39,7 +39,7 @@ class Account:
         Load the account from storage
         """
         if not path.isfile(path.join(Account.file, self.username+".json")):
-            print("[!] %s does not exsist" % self.username)
+            print("[!!] %s does not exsist" % self.username)
             raise FileNotFoundError
 
         self.__file_lock.acquire()
@@ -62,7 +62,7 @@ class Account:
             phone_number = None
         self.phone = phone_number
 
-        self.admin = is_admin
+        self.admin = (is_admin == True or str(is_admin).lower() == "true")
         self.__save()
 
     def login(self, cookies):
