@@ -23,7 +23,7 @@ Allows for multiple accounts to be processed simultaneously with persistant stor
    # OR
    python add_account.py 'username' 'password' 'is_admin(True/False)' 'phone number'
    ```
-2. Change the flags in `Abuse\main.py Line:18/19/20` if you want the twitch tabs to not be shown, you want to turn auto claim off or you want to turn notifications off.
+2. Change the flags in `Abuse\main.py Line:13-17` if you want the twitch tabs to not be shown, you want to turn auto claim off or you want to turn notifications off.
 3. WARNING if you do not have Twilio then turn notifcations off.
 4. Run for all stored users.
    ```bash
@@ -33,3 +33,11 @@ Allows for multiple accounts to be processed simultaneously with persistant stor
 ## License
 
 me no know
+
+## Todo
+
+- Bug fixes
+    - Accept mature audience streams
+    - Do something with Amazon watch party streams, stems from some streamers not correctly categorising their streams
+    - Possible bug when checking if there are any redeemable rewards left
+- Add a GUI
