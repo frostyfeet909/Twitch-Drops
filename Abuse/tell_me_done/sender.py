@@ -71,9 +71,12 @@ class Notifier:
                 if user_account.phone_number == phone_number:
                     user = user_account
                     break
+            else:
+                print("[!] No matching user found")
+                return False
 
-        if user is None:
-            print("[!] No users match this number")
+        if not user.phone:
+            print("[!] User has no phone number")
             return False
 
         print("<< Message sent to %s" %

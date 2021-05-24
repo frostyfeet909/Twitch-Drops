@@ -8,7 +8,7 @@ from selenium.webdriver.common import action_chains
 from selenium.webdriver.common import keys
 from selenium.webdriver.chrome import options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException, TimeoutException
+from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException, TimeoutException, WebDriverException
 import threading
 import account
 from utility import time_lock
@@ -103,7 +103,6 @@ class Twitch(threading.Thread):
 
         self.driver = webdriver.Chrome(
             executable_path=file_loc, chrome_options=chrome_options)
-        # self.driver.implicitly_wait(2)  # Don't think works
 
     def _login(self):
         """
@@ -140,9 +139,17 @@ class Twitch(threading.Thread):
             if a robot check is true then verification cannot be completed 
             but this does not matter if the account details do not need to be verified : Bool
         """
-        self.lock.acquire()
-        self.driver.get("https://www.twitch.tv/login")
-        self.lock.release()
+        if not self.user.password:
+            return False
+
+        # Check for internet
+        try:
+            self.lock.acquire()
+            self.driver.get("https://www.twitch.tv/login")
+            self.lock.release()
+        except WebDriverException:
+            print("[!!] Do you have internet?")
+            raise InterruptedError
 
         # Enter username
         username_element = self.driver.find_element_by_id("login-username")
@@ -173,6 +180,7 @@ class Twitch(threading.Thread):
             -> Bool
         """
         if not self.__verify_account(False):
+            print("[!!] Unable to login with username, password")
             return False
 
         # Checks for various traps - sometimes in different orders so verifies no checks still remain
