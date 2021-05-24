@@ -73,15 +73,14 @@ def add_account(user_info=None):
             user_info[2] = (True if user_info[2].lower().strip()
                             == "true" else False)
 
+    # Update user account
     if any(person.username == user_info[0] for person in accounts.get_accounts()):
         print("[+] updating exsisting account: %s " % user_info[0])
         user = account.Account(user_info[0])
         user.load()
-        if len(user_info) > 2:
-            user.admin = user_info[2]
-            if len(user_info) > 3:
-                user.phone = user_info[3]
+        user.create(*user_info[1:])
 
+    # Create user account
     elif verify_account(user_info[0], user_info[1]):
         user = account.Account(user_info[0])
         user.create(*user_info[1:])

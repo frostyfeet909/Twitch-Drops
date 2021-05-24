@@ -21,11 +21,15 @@ class Account:
         self.phone = None
         self.admin = None
         self.cookies = None
+        self.temporary = False
 
     def __save(self):
         """
         Save the account
         """
+        if self.temporary:
+            return
+
         # Format for json
         data = {"password": self.password, "phone": self.phone,
                 "admin": self.admin, "cookies": self.cookies}
@@ -39,6 +43,9 @@ class Account:
         """
         Delete the account - generally due to incorrect data
         """
+        if self.temporary:
+            return
+
         if not path.isfile(path.join(Account.file, self.username+".json")):
             print("[!!] %s does not exsist" % self.username)
             raise FileNotFoundError
@@ -65,20 +72,25 @@ class Account:
         self.cookies = data["cookies"]
         self.__file_lock.release()
 
-    def create(self, password,  is_admin=False, phone_number=None, temporary=False):
+    def create(self, password=None,  is_admin=False, phone_number=None, temporary=False):
         """
         Create a fresh account (or overwrite old account with same username)
         """
+        self.temporary = temporary
+
+        if password == "":
+            password = None
         self.password = password
 
         if phone_number == "":
             phone_number = None
         self.phone = phone_number
 
-        self.admin = (is_admin == True or str(is_admin).lower() == "true")
+        # Extra safe
+        self.admin = (is_admin == True or str(
+            is_admin).strip().lower() == "true")
 
-        if not temporary:
-            self.__save()
+        self.__save()
 
     def login(self, cookies):
         """
