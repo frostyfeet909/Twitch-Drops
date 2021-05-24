@@ -1,6 +1,7 @@
 # Stores account information persistantly
 import json
 import threading
+import os
 from os import path
 
 
@@ -34,6 +35,18 @@ class Account:
             json.dump(data, file)
         self.__file_lock.release()
 
+    def delete(self):
+        """
+        Delete the account - generally due to incorrect data
+        """
+        if not path.isfile(path.join(Account.file, self.username+".json")):
+            print("[!!] %s does not exsist" % self.username)
+            raise FileNotFoundError
+
+        self.__file_lock.acquire()
+        os.remove(path.join(Account.file, self.username+".json"))
+        self.__file_lock.release()
+
     def load(self):
         """
         Load the account from storage
@@ -52,7 +65,7 @@ class Account:
         self.cookies = data["cookies"]
         self.__file_lock.release()
 
-    def create(self, password,  is_admin, phone_number=None):
+    def create(self, password,  is_admin=False, phone_number=None, temporary=False):
         """
         Create a fresh account (or overwrite old account with same username)
         """
@@ -63,7 +76,9 @@ class Account:
         self.phone = phone_number
 
         self.admin = (is_admin == True or str(is_admin).lower() == "true")
-        self.__save()
+
+        if not temporary:
+            self.__save()
 
     def login(self, cookies):
         """
