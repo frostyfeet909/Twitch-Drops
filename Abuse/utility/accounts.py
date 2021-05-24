@@ -21,8 +21,8 @@ def get_accounts():
     folder = os.listdir(folder)
 
     if not folder:
-        print("[!!] No users")
-        raise FileNotFoundError
+        print("[*] No users")
+        return []
 
     for account_name in folder:
         try:
@@ -31,7 +31,6 @@ def get_accounts():
             print("[!] Python version does not support removesuffix - be careful")
             username = account_name[:-5]
 
-        print("[+] Found user %s " % username)
         user = account.Account(username)
         user.load()
         accounts.append(user)
