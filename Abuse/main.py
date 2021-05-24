@@ -1,4 +1,7 @@
 # Main program to build and run classes
+import queue
+import thread_person
+from utility import accounts
 
 
 def run(threads=2):
@@ -6,9 +9,6 @@ def run(threads=2):
     Thread and queue people
         threads - No. of threads : Integer > 0
     """
-    import queue
-    import thread_person
-    from utility import accounts
 
     shutdown_on_finish = False  # Should the system shutdown at the end
     alert_at_end = True  # Should the admins be messages at the end - notifications must be True

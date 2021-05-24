@@ -28,6 +28,7 @@ class Thread_person(threading.Thread):
 
             print(user_account.username, "-", "[*] Threading.")
 
+            # If you can and should send them messages, send them messages
             if user_account.phone != None and self.notifications:
                 person_alert = sender.Notifier()
                 notify = True
