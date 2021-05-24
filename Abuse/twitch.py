@@ -1,5 +1,4 @@
 # Objects to model Twitch screens
-import os
 from os import path
 import platform
 import time
@@ -21,7 +20,7 @@ class Twitch(threading.Thread):
         headless - Should selenium start headless if possible : Boolean
     """
 
-    def __init__(self, user, headless=True):
+    def __init__(self, user, headless=False):
         threading.Thread.__init__(self)
         self.driver = None
         self.url = None
@@ -49,21 +48,25 @@ class Twitch(threading.Thread):
             raise PermissionError
 
         if need_login:
-            self.__setup_webdriver(False)
+            self.__setup_webdriver()
 
     def run(self):
         """
+        Verify login data for the twitch account
         """
-        return None
+        self.__setup_webdriver()
+        valid = self.__verify_account()
+        self.driver.quit()
+        return valid
 
-    def __setup_webdriver(self, cannot_headless):
+    def __setup_webdriver(self, cannot_headless=False):
         """
         Setup selenium webdriver
             cannot_headless - Cannot be headless if manual login is required : Bool
         """
 
         if self.driver != None:
-            self.drier.quit()
+            self.driver.quit()
 
         # Find webdriver
         plat = platform.platform().lower()
@@ -105,27 +108,35 @@ class Twitch(threading.Thread):
         Login to Twitch
             -> Bool
         """
+        logged_in = False
+
         if self.user.cookies == None:
             self.user.lock.acquire()
             self.user.load()
 
             if self.user.cookies != None:
-                print("I founnd cookies?")
+                print("I has cookies?")
                 self.user.lock.release()
-                self.__login_by_cookies()
+                logged_in = self.__login_by_cookies()
             else:
-                print("Proper logging")
-                self.__login_by_twitch()
+                logged_in = self.__login_by_twitch()
                 self.user.lock.release()
+                return logged_in
         else:
-            self.__login_by_cookies()
+            logged_in = self.__login_by_cookies()
 
-        return True
+        # As a last effort try manual login
+        if not logged_in:
+            logged_in = self.__login_by_twitch()
 
-    def __login_by_twitch(self):
+        return logged_in
+
+    def __verify_account(self, check_robot=True):
         """
-        Login to Twitch through Twitch login page
-            -> Bool
+        Verify the username and password are correct for the given account
+            - check_robot - Should a robot check be done, 
+            if a robot check is true then verification cannot be completed 
+            but this does not matter if the account details do not need to be verified : Bool
         """
         self.lock.acquire()
         self.driver.get("https://www.twitch.tv/login")
@@ -144,21 +155,46 @@ class Twitch(threading.Thread):
         password_element.send_keys(keys.Keys.RETURN)
         self.lock.release()
 
-        # Checks for various steps
-        while self.__check_auth():
-            print(self.user.username, "-",
-                  "[!] Auth verification required.")
-            time.sleep(10)
+        if check_robot and self.__check_not_robot():
+            print(
+                "[!!] Robot checks are in force - could not verify \n  try changing your ip")
+            raise LookupError
 
-        while self.__check_not_robot():
-            print(self.user.username, "-",
-                  "[!] Robot verification required.")
-            time.sleep(10)
+        alert_window = self._find_element_xpath(
+            "//div[contains(@class, 'server-message-alert')]//strong")
 
-        while self.__check_need_verify():
-            print(self.user.username, "-",
-                  "[!] New login verification required.")
-            time.sleep(10)
+        return (alert_window == None)
+
+    def __login_by_twitch(self):
+        """
+        Login to Twitch through Twitch login page
+            -> Bool
+        """
+        if not self.__verify_account(False):
+            return False
+
+        # Checks for various traps - sometimes in different orders so verifies no checks still remain
+        # Slow but effective
+        checks = True
+        while checks:
+            checks = False
+            while self.__check_auth():
+                checks = True
+                print(self.user.username, "-",
+                      "[!] Auth verification required.")
+                time.sleep(10)
+
+            while self.__check_not_robot():
+                checks = True
+                print(self.user.username, "-",
+                      "[!] Robot verification required.")
+                time.sleep(10)
+
+            while self.__check_need_verify():
+                checks = True
+                print(self.user.username, "-",
+                      "[!] New login verification required.")
+                time.sleep(10)
 
         self.user.login(self.driver.get_cookies())
         return True
@@ -179,7 +215,7 @@ class Twitch(threading.Thread):
                 self.driver.add_cookie(cookie)
         except:
             print("[!!] Cookie error.")
-            raise ConnectionError
+            return False
 
         self.lock.acquire()
         self.driver.refresh()
