@@ -1,20 +1,17 @@
 # Main program to build and run classes
 
 
-def run(threads=2, shutdown_on_finish=False, alert_at_end=True):
+def run(threads=2):
     """
     Thread and queue people
         threads - No. of threads : Integer > 0
-        shutdown_on_finish - Should the system shutdown on end : Boolean
-        alert_at_end - Should admins be notified at end of program : Boolean
     """
     import queue
     import thread_person
-    import account
-    import os
-    from os import path
     from utility import accounts
 
+    shutdown_on_finish = False  # Should the system shutdown at the end
+    alert_at_end = True  # Should the admins be messages at the end - notifications must be True
     headless = False  # Change this to hide/show the Twitch windows
     auto_claim = True  # Might be a bug - don't auto claim whilst playing smite
     notifications = True  # Turn off if you do not have Twilio
@@ -56,10 +53,8 @@ if __name__ == "__main__":
     import sys
 
     # Check for args
-    if len(sys.argv) > 3:
+    if len(sys.argv) > 1:
         threads = sys.argv[1]
-        shutdown = sys.argv[2]
-        alert = sys.argv[3]
-        run(threads, shutdown, alert)
+        run(threads)
     else:
         run()
