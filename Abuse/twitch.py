@@ -349,10 +349,13 @@ class Stream(Twitch):
         """
         Optimise current stream to lower resources
         """
+        self._click_element_xpath(
+            "//button[@data-a-target='player-overlay-mature-accept']")  # Accept mature stream
         self.__lower_quality()
 
         if not self.chat:
-            self.__close_chat()
+            self._click_element_xpath(
+                "//div[@data-a-target='right-column-chat-bar']//button[@data-a-target='right-column__toggle-collapse-btn']")
 
     def _find_stream(self):
         """
@@ -414,13 +417,6 @@ class Stream(Twitch):
         else:
             self._click_element_xpath(
                 "//div[@data-a-target='player-settings-submenu-quality-option']//div[contains(text(), '%s')]" % quality)
-
-    def __close_chat(self):
-        """
-        Close stream chat
-        """
-        self._click_element_xpath(
-            "//div[@data-a-target='right-column-chat-bar']//button[@data-a-target='right-column__toggle-collapse-btn']")
 
 
 class Inventory(Twitch):
