@@ -148,8 +148,7 @@ class Twitch(threading.Thread):
             self.driver.get("https://www.twitch.tv/login")
             self.lock.release()
         except WebDriverException:
-            print("[!!] Do you have internet?")
-            raise InterruptedError
+            raise WebDriverException("[!!] Do you have internet?")
 
         # Enter username
         username_element = self.driver.find_element_by_id("login-username")
@@ -343,6 +342,12 @@ class Stream(Twitch):
 
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting stream.")
+
+        # Logs for debugging
+        with open("resources/logs/stream_log.txt", "w") as file:
+            file.write(self.driver.page_source)
+        self.driver.save_screenshot("resources/logs/stream_shot.png")
+
         self.driver.quit()
 
     def _optimise_stream(self):
@@ -354,6 +359,7 @@ class Stream(Twitch):
         self.__lower_quality()
 
         if not self.chat:
+            # Turn chat off
             self._click_element_xpath(
                 "//div[@data-a-target='right-column-chat-bar']//button[@data-a-target='right-column__toggle-collapse-btn']")
 
@@ -469,6 +475,12 @@ class Inventory(Twitch):
 
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting inventory.")
+
+        # Logs for debugging
+        with open("resources/logs/inventory_log.txt", "w") as file:
+            file.write(self.driver.page_source)
+        self.driver.save_screenshot("resources/logs/inventory_shot.png")
+
         self.driver.quit()
 
     def _claim_drop(self):
@@ -519,11 +531,6 @@ class Inventory(Twitch):
         if self._find_element_xpath("//div[@data-test-selector='DropsCampaignInProgressRewards-container']//img[@class='inventory-drop-image inventory-opacity-2 tw-image']") == None:
             print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
                   "[*] No more drops left.")
-
-            with open("log.txt", "w") as file:
-                file.write(self.driver.page_source)
-
-            input("WAITING >>>> ")
 
             self.drops.set()
             return False

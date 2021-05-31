@@ -19,8 +19,8 @@ def make_dirs():
         print("Abuse not found")
         return False
 
-    results = [path.join(location, "resources"), path.join(
-        location, "resources", "users"), path.join(location, "resources", "webdrivers")]
+    results = [path.join(location, "resources"), path.join(location, "resources", "users"), path.join(
+        location, "resources", "webdrivers"), path.join(location, "resources", "logs")]
     for result in results:
         if not path.isdir(result):
             os.mkdir(result)
