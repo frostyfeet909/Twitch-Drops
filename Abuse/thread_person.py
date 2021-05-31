@@ -3,7 +3,7 @@ import threading
 import queue
 import twitch
 import account
-from tell_me_done import sender
+import tell_me_done
 
 
 class Thread_person(threading.Thread):
@@ -30,7 +30,7 @@ class Thread_person(threading.Thread):
 
             # If you can and should send them messages, send them messages
             if user_account.phone != None and self.notifications:
-                person_alert = sender.Notifier()
+                person_alert = tell_me_done.Notifier()
                 notify = True
             else:
                 notify = False
