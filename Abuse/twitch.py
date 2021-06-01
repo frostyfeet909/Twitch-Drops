@@ -120,7 +120,6 @@ class Twitch(threading.Thread):
             self.user.load()
 
             if self.user.cookies != None:
-                print("I has cookies?")
                 self.user.lock.release()
                 logged_in = self.__login_by_cookies()
             else:
@@ -155,13 +154,15 @@ class Twitch(threading.Thread):
             raise WebDriverException("[!!] Do you have internet?")
 
         # Enter username
-        username_element = self.driver.find_element_by_id("login-username")
+        username_element = self._find_element_xpath(
+            "//input[@id='login-username']")
         self.lock.acquire()
         username_element.send_keys(self.user.username)
         self.lock.release()
 
         # Enter password
-        password_element = self.driver.find_element_by_id("password-input")
+        password_element = self._find_element_xpath(
+            "//input[@id='password-input']")
         self.lock.acquire()
         password_element.send_keys(self.user.password)
         password_element.send_keys(keys.Keys.RETURN)
@@ -492,16 +493,16 @@ class Inventory(Twitch):
         self._setup()
 
         while self.__check_drops_available():
-            self.lock.acquire()
-            self.driver.refresh()
-            self.lock.release()
-
             self.__claim_drop()
 
             print(self.user.username, "-",
                   datetime.now().strftime("%H:%M:%S"), "-", "[*] Drops processed.")
 
             time.sleep(600)
+
+            self.lock.acquire()
+            self.driver.refresh()
+            self.lock.release()
 
             if self.__check_error():
                 print(self.user.username, "-",
