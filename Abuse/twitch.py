@@ -35,6 +35,9 @@ class Twitch(threading.Thread):
         """
             Setup Twitch page - login and setup selenium webdriver
         """
+        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+              "[*] Twitch Starting.")
+
         # If headless required, must ensure cookies exsist
         if self.user.cookies == None and self.headless:
             need_login = True
@@ -321,13 +324,20 @@ class Stream(Twitch):
         self.url = "https://www.twitch.tv/directory/game/SMITE/tags/c2542d6d-cd10-4532-919b-3d19f30a768b"
         self.chat = chat_on
 
+    def _setup(self):
+        """
+        Setup the stream, first setting up Twitch
+        """
+        Twitch._setup(self)
+
+        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+              "[*] Stream Starting.")
+
     def run(self):
         """
         Automate finding and watching droppable streams
         """
         self._setup()
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
-              "[*] Stream Starting.")
 
         while (not self.drops.is_set() if self.drops != None else True):
             if not self.__check_stream_alive():
@@ -341,10 +351,15 @@ class Stream(Twitch):
 
             time.sleep(600)
 
+            if self.__check_error():
+                print(self.user.username, "-",
+                      datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                self._setup()
+
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting stream.")
 
-        # Logs for debugging
+        # Logs for debugging - network timeout bug
         with open("resources/logs/stream_log.txt", "w") as file:
             file.write(self.driver.page_source)
         self.driver.save_screenshot("resources/logs/stream_shot.png")
@@ -425,6 +440,13 @@ class Stream(Twitch):
             self._click_element_xpath(
                 "//div[@data-a-target='player-settings-submenu-quality-option']//div[contains(text(), '%s')]" % quality)
 
+    def __check_error(self):
+        """
+        Check for an error inside te player
+            -> Bool
+        """
+        return (None != self._find_element_xpath("//p[contains(text(), 'Error')]"))
+
 
 class Inventory(Twitch):
     """
@@ -450,17 +472,24 @@ class Inventory(Twitch):
             from tell_me_done import sender
             self.notifyer = sender.Notifier()
 
-    def run(self):
+    def _setup(self):
         """
-        Automate checking and claiming drops in the appropriate inventory
+        Setup the inventory page, first setting up Twitch
         """
-        self._setup()
+        Twitch._setup(self)
+
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
               "[*] Inventory Starting.")
 
         self.lock.acquire()
         self.driver.get(self.url)
         self.lock.release()
+
+    def run(self):
+        """
+        Automate checking and claiming drops in the appropriate inventory
+        """
+        self._setup()
 
         while self.__check_drops_available():
             self.lock.acquire()
@@ -474,10 +503,15 @@ class Inventory(Twitch):
 
             time.sleep(600)
 
+            if self.__check_error():
+                print(self.user.username, "-",
+                      datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                self._setup()
+
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting inventory.")
 
-        # Logs for debugging
+        # Logs for debugging - network timeout bug
         with open("resources/logs/inventory_log.txt", "w") as file:
             file.write(self.driver.page_source)
         self.driver.save_screenshot("resources/logs/inventory_shot.png")
@@ -537,3 +571,10 @@ class Inventory(Twitch):
             return False
         else:
             return True
+
+    def __check_error(self):
+        """
+        Check for an network error where screen is not loaded
+            -> Bool
+        """
+        return (None == self._find_element_xpath("//h2[contains(text(), 'Drops')]"))
