@@ -2,7 +2,6 @@
 from twilio.rest import Client
 from tell_me_done import data_interface
 from utility import accounts
-import account
 
 
 class Notifier:
