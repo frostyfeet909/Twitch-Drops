@@ -31,7 +31,7 @@ class Twitch(threading.Thread):
         self.headless = headless
         self.active = True
 
-    def setup(self):
+    def _setup(self):
         """
             Setup Twitch page - login and setup selenium webdriver
         """
@@ -44,7 +44,7 @@ class Twitch(threading.Thread):
         self.__setup_webdriver(need_login)
 
         # Check successful login
-        if not self._login():
+        if not self.__login():
             print(self.user.username, "-", "[!!] Could not login.")
             raise PermissionError
 
@@ -52,6 +52,7 @@ class Twitch(threading.Thread):
             self.__setup_webdriver()
 
     def run(self):
+        # Maybe rename validate_account
         """
         Verify login data for the twitch account
         """
@@ -104,7 +105,7 @@ class Twitch(threading.Thread):
         self.driver = webdriver.Chrome(
             executable_path=file_loc, chrome_options=chrome_options)
 
-    def _login(self):
+    def __login(self):
         """
         Login to Twitch
             -> Bool
@@ -324,19 +325,19 @@ class Stream(Twitch):
         """
         Automate finding and watching droppable streams
         """
-        self.setup()
+        self._setup()
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
               "[*] Stream Starting.")
 
         while (not self.drops.is_set() if self.drops != None else True):
-            if not self._check_stream_alive():
-                if self._find_stream():
-                    self._optimise_stream()
+            if not self.__check_stream_alive():
+                if self.__find_stream():
+                    self.__optimise_stream()
             else:
                 print(self.user.username, "-",
                       datetime.now().strftime("%H:%M:%S"), "-", "[*] Stream Running.")
                 if self.chat:
-                    self._claim_channel_points()
+                    self.__claim_channel_points()
 
             time.sleep(600)
 
@@ -350,7 +351,7 @@ class Stream(Twitch):
 
         self.driver.quit()
 
-    def _optimise_stream(self):
+    def __optimise_stream(self):
         """
         Optimise current stream to lower resources
         """
@@ -363,7 +364,7 @@ class Stream(Twitch):
             self._click_element_xpath(
                 "//div[@data-a-target='right-column-chat-bar']//button[@data-a-target='right-column__toggle-collapse-btn']")
 
-    def _find_stream(self):
+    def __find_stream(self):
         """
         Find and goto a new stream
             -> Bool
@@ -383,7 +384,7 @@ class Stream(Twitch):
         print("    - %s" % self.driver.current_url)
         return True
 
-    def _check_stream_alive(self):
+    def __check_stream_alive(self):
         """
         Check if current stream is still live
             -> Bool
@@ -395,7 +396,7 @@ class Stream(Twitch):
 
         return True
 
-    def _claim_channel_points(self):
+    def __claim_channel_points(self):
         """
         Claim channel points
         """
@@ -453,7 +454,7 @@ class Inventory(Twitch):
         """
         Automate checking and claiming drops in the appropriate inventory
         """
-        self.setup()
+        self._setup()
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
               "[*] Inventory Starting.")
 
@@ -461,12 +462,12 @@ class Inventory(Twitch):
         self.driver.get(self.url)
         self.lock.release()
 
-        while self._check_drops_available():
+        while self.__check_drops_available():
             self.lock.acquire()
             self.driver.refresh()
             self.lock.release()
 
-            self._claim_drop()
+            self.__claim_drop()
 
             print(self.user.username, "-",
                   datetime.now().strftime("%H:%M:%S"), "-", "[*] Drops processed.")
@@ -483,7 +484,7 @@ class Inventory(Twitch):
 
         self.driver.quit()
 
-    def _claim_drop(self):
+    def __claim_drop(self):
         """
         Attempt to claim a drop in the inventory
             -> Bool
@@ -521,7 +522,7 @@ class Inventory(Twitch):
 
         return False
 
-    def _check_drops_available(self):
+    def __check_drops_available(self):
         """
         Check if there are any drops left
         """
