@@ -20,6 +20,9 @@ class Twitch(threading.Thread):
         headless - Should selenium start headless if possible : Boolean
     """
 
+    log_file = path.join(path.dirname(path.realpath(__file__)),
+                         "resources", "logs")
+
     def __init__(self, user, headless=False):
         threading.Thread.__init__(self)
         self.driver = None
@@ -34,7 +37,7 @@ class Twitch(threading.Thread):
         """
             Setup Twitch page - login and setup selenium webdriver
         """
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+        print(self.user.username, "-", self._date_time(), "-",
               "[*] Twitch Starting.")
 
         # If headless required, must ensure cookies exsist
@@ -285,7 +288,7 @@ class Twitch(threading.Thread):
         except WebDriverException:
             element = None
             print(self.user.username, "-",
-                  datetime.now().strftime("%H:%M:%S"), "-", "[!] Somethign funny happened with the webdriver.")
+                  self._date_time(), "-", "[!] Somethign funny happened with the webdriver.")
 
             self._log_error()
             self._setup()
@@ -320,14 +323,28 @@ class Twitch(threading.Thread):
         Log any unexpected happenigns
         """
         url = self.driver.current_url.split("/")[-1]
-        date_time = datetime.now().strftime("%H:%M:%S")
+        date_time = self._date_time(True)
+        descriptor = url+date_time
 
-        file_path = "resources/logs/text/%s_%s.txt" % (url, date_time)
+        file_path = path.join(self.log_file, "text", descriptor+".txt")
         with open(file_path, "w") as file:
             file.write(self.driver.page_source)
 
-        file_path = "resources/logs/screenshot/%s_%s.png" % (url, date_time)
+        file_path = path.join(self.log_file, "screenshot", descriptor+".png")
         self.driver.save_screenshot(file_path)
+
+    @staticmethod
+    def _date_time(file_friendly=False):
+        """
+        Static method to get the datetime in a readable format
+            file_friendly - Does the format have to be file name friendly : Bool
+            date_time - Current datetime in H:M:S : String
+            file_friendly -> date_time
+        """
+        if not file_friendly:
+            return datetime.now().strftime("%H:%M:%S")
+        else:
+            return datetime.now().strftime("%H-%M-%S")
 
 
 class Stream(Twitch):
@@ -352,7 +369,7 @@ class Stream(Twitch):
         """
         Twitch._setup(self)
 
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+        print(self.user.username, "-", self._date_time(), "-",
               "[*] Stream Starting.")
 
     def run(self):
@@ -367,7 +384,7 @@ class Stream(Twitch):
                     self.__optimise_stream()
             else:
                 print(self.user.username, "-",
-                      datetime.now().strftime("%H:%M:%S"), "-", "[*] Stream Running.")
+                      self._date_time(), "-", "[*] Stream Running.")
                 if self.chat:
                     self.__claim_channel_points()
 
@@ -375,12 +392,12 @@ class Stream(Twitch):
 
             if self.__check_error():
                 print(self.user.username, "-",
-                      datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                      self._date_time(), "-", "[!] Network error.")
                 self._log_error()
                 self._setup()
                 self._log_error()
 
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
+        print(self.user.username, "-", self._date_time(),
               "-", "[*] Quitting stream.")
 
         # Logs for debugging - network timeout bug
@@ -412,11 +429,11 @@ class Stream(Twitch):
 
         # Click on first valid stream
         if not self._click_element_xpath("//div[@data-target='directory-first-item']//a[@data-a-target='preview-card-title-link']"):
-            print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+            print(self.user.username, "-", self._date_time(), "-",
                   "[!] New stream not found.")
             return False
 
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+        print(self.user.username, "-", self._date_time(), "-",
               "[*] New stream found.")
         print("    - %s" % self.driver.current_url)
         return True
@@ -428,7 +445,7 @@ class Stream(Twitch):
         """
         # Check stream live and dropping, some streams (smitegame) go 'offline' meaning no drops but still live
         if not (self._find_element_xpath("//div[@class='channel-info-content']//p[contains(text(), 'LIVE')]") or self._find_element_xpath("//div[@class='channel-info-content']//a[@data-a-target='Drops Enabled']")):
-            print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+            print(self.user.username, "-", self._date_time(), "-",
                   "[!] Stream offline.")
             return False
 
@@ -501,7 +518,7 @@ class Inventory(Twitch):
         """
         Twitch._setup(self)
 
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+        print(self.user.username, "-", self._date_time(), "-",
               "[*] Inventory Starting.")
 
         self.lock.acquire()
@@ -518,7 +535,7 @@ class Inventory(Twitch):
             self.__claim_drop()
 
             print(self.user.username, "-",
-                  datetime.now().strftime("%H:%M:%S"), "-", "[*] Drops processed.")
+                  self._date_time(), "-", "[*] Drops processed.")
 
             time.sleep(600)
 
@@ -528,12 +545,12 @@ class Inventory(Twitch):
 
             if self.__check_error():
                 print(self.user.username, "-",
-                      datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                      self._date_time(), "-", "[!] Network error.")
                 self._log_error()
                 self._setup()
                 self._log_error()
 
-        print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
+        print(self.user.username, "-", self._date_time(),
               "-", "[*] Quitting inventory.")
 
         # Logs for debugging - network timeout bug
@@ -549,7 +566,7 @@ class Inventory(Twitch):
         element = self._find_element_xpath(
             "//div[@data-test-selector='DropsCampaignInProgressRewards-container']//button[@data-test-selector='DropsCampaignInProgressRewardPresentation-claim-button']")
         if element != None:
-            print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+            print(self.user.username, "-", self._date_time(), "-",
                   "[*] Drop claimable.")
 
             # Notify drop claimable
@@ -561,14 +578,14 @@ class Inventory(Twitch):
                 self._click_element_xpath(
                     "//div[@data-test-selector='DropsCampaignInProgressRewards-container']//button[@data-test-selector='DropsCampaignInProgressRewardPresentation-claim-button']")
                 print(self.user.username, "-",
-                      datetime.now().strftime("%H:%M:%S"), "-", "[+] Drop claimed.")
+                      self._date_time(), "-", "[+] Drop claimed.")
 
             # Wait for drop to be claimed
             else:
                 while self._find_element_xpath(
                         "//div[@data-test-selector='DropsCampaignInProgressRewards-container']//button[@data-test-selector='DropsCampaignInProgressRewardPresentation-claim-button']"):
                     print(self.user.username, "-",
-                          datetime.now().strftime("%H:%M:%S"), "-", "[!] Not claimed yet.")
+                          self._date_time(), "-", "[!] Not claimed yet.")
                     time.sleep(60)
 
                     self.lock.acquire()
@@ -587,7 +604,7 @@ class Inventory(Twitch):
             return True
 
         if self._find_element_xpath("//div[@data-test-selector='DropsCampaignInProgressRewards-container']//img[@class='inventory-drop-image inventory-opacity-2 tw-image']") == None:
-            print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
+            print(self.user.username, "-", self._date_time(), "-",
                   "[*] No more drops left.")
 
             self.drops.set()
