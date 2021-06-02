@@ -59,10 +59,10 @@ class Person(threading.Thread):
             self.queue.task_done()
 
 
-def run(threads=2):
+def run(threads=0):
     """
     Thread and queue people
-        threads - No. of threads : Integer > 0
+        threads - No. of threads defaults to number of users : Integer > 0
     """
 
     shutdown_on_finish = False  # Should the system shutdown at the end
@@ -78,6 +78,9 @@ def run(threads=2):
 
     print("[*] Starting")
 
+    user_accounts = accounts.get_accounts()
+    threads = len(user_accounts) if threads == 0 else threads
+
     # Setup threads
     for _ in range(threads):
         t = Person(people_queue, headless, auto_claim, notifications)
@@ -85,8 +88,6 @@ def run(threads=2):
         t.start()
 
     # Add people to queue
-    user_accounts = accounts.get_accounts()
-
     for user_account in user_accounts:
         people_queue.put(user_account)
 
