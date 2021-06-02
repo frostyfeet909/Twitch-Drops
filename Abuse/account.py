@@ -1,8 +1,8 @@
 # Stores account information persistantly
 import json
-import threading
 import os
 from os import path
+import threading
 
 
 class Account:

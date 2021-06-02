@@ -1,7 +1,6 @@
 # Add a new user account from CLI
 import account
 import twitch
-import phonenumbers
 from utility import accounts
 
 
@@ -28,6 +27,8 @@ def verify_phone_number(phone_number):
         phone_number -> Bool
     """
     print("[*] Verifying phone number")
+    import phonenumbers  # importing previously imported modules has little to no overhead - safer to import here as some may not use twilio/phonenumbers
+
     try:
         number = phonenumbers.parse(phone_number)
     except:

@@ -1,15 +1,14 @@
 # Objects to model Twitch screens
 from os import path
 import platform
+import threading
 import time
 from datetime import datetime
 from selenium import webdriver
-from selenium.webdriver.common import action_chains
 from selenium.webdriver.common import keys
 from selenium.webdriver.chrome import options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException, TimeoutException, WebDriverException
-import threading
+from selenium.common.exceptions import ElementNotInteractableException, TimeoutException, WebDriverException
 import account
 from utility import time_lock
 
