@@ -19,8 +19,8 @@ def make_dirs():
         print("Abuse not found")
         return False
 
-    results = [path.join(location, "resources"), path.join(location, "resources", "users"), path.join(
-        location, "resources", "webdrivers"), path.join(location, "resources", "logs")]
+    results = [path.join(location, "resources"), path.join(location, "resources", "users"), path.join(location, "resources", "webdrivers"), path.join(
+        location, "resources", "logs"), path.join(location, "resources", "logs", "text"), path.join(location, "resources", "logs", "screenshot")]
     for result in results:
         if not path.isdir(result):
             os.mkdir(result)
@@ -37,6 +37,8 @@ def install_modules():
         print("requirements.txt not found")
         return False
 
+    installed = True
+
     for line in lines:
         line = line.strip()
         print("Importing: %s" % line)
@@ -49,8 +51,11 @@ def install_modules():
                 subprocess.call([sys.executable, "-m", "pip", "install", line])
             except:
                 print("Could not install: %s" % line)
+                installed = False
             else:
                 print("Installed: %s" % line)
+
+    return installed
 
 
 def run():

@@ -1,9 +1,9 @@
 # Objects to model Twitch screens
+from datetime import datetime
 from os import path
 import platform
 import threading
 import time
-from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common import keys
 from selenium.webdriver.chrome import options
@@ -282,6 +282,14 @@ class Twitch(threading.Thread):
                 lambda d: d.find_element_by_xpath(xpath))
         except TimeoutException:
             element = None
+        except WebDriverException:
+            element = None
+            print(self.user.username, "-",
+                  datetime.now().strftime("%H:%M:%S"), "-", "[!] Somethign funny happened with the webdriver.")
+
+            self._log_error()
+            self._setup()
+            self._log_error()
 
         return element
 
@@ -306,6 +314,19 @@ class Twitch(threading.Thread):
             return True
 
         return False
+
+    def _log_error(self):
+        """
+        Log any unexpected happenigns
+        """
+        file_path = "resources/logs/text/%s_%s.txt" % (
+            self.driver.current_url, datetime.now().strftime("%H:%M:%S"))
+        with open(file_path, "w") as file:
+            file.write(self.driver.page_source)
+
+        file_path = "resources/logs/screenshot/%s_%s.png" % (
+            self.driver.current_url, datetime.now().strftime("%H:%M:%S"))
+        self.driver.save_screenshot(file_path)
 
 
 class Stream(Twitch):
@@ -354,15 +375,15 @@ class Stream(Twitch):
             if self.__check_error():
                 print(self.user.username, "-",
                       datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                self._log_error()
                 self._setup()
+                self._log_error()
 
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting stream.")
 
         # Logs for debugging - network timeout bug
-        with open("resources/logs/stream_log.txt", "w") as file:
-            file.write(self.driver.page_source)
-        self.driver.save_screenshot("resources/logs/stream_shot.png")
+        self._log_error()
 
         self.driver.quit()
 
@@ -507,15 +528,15 @@ class Inventory(Twitch):
             if self.__check_error():
                 print(self.user.username, "-",
                       datetime.now().strftime("%H:%M:%S"), "-", "[!] Network error.")
+                self._log_error()
                 self._setup()
+                self._log_error()
 
         print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"),
               "-", "[*] Quitting inventory.")
 
         # Logs for debugging - network timeout bug
-        with open("resources/logs/inventory_log.txt", "w") as file:
-            file.write(self.driver.page_source)
-        self.driver.save_screenshot("resources/logs/inventory_shot.png")
+        self._log_error()
 
         self.driver.quit()
 
