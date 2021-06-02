@@ -319,13 +319,14 @@ class Twitch(threading.Thread):
         """
         Log any unexpected happenigns
         """
-        file_path = "resources/logs/text/%s_%s.txt" % (
-            self.driver.current_url, datetime.now().strftime("%H:%M:%S"))
+        url = self.driver.current_url.split("/")[-1]
+        date_time = datetime.now().strftime("%H:%M:%S")
+
+        file_path = "resources/logs/text/%s_%s.txt" % (url, date_time)
         with open(file_path, "w") as file:
             file.write(self.driver.page_source)
 
-        file_path = "resources/logs/screenshot/%s_%s.png" % (
-            self.driver.current_url, datetime.now().strftime("%H:%M:%S"))
+        file_path = "resources/logs/screenshot/%s_%s.png" % (url, date_time)
         self.driver.save_screenshot(file_path)
 
 
@@ -599,4 +600,4 @@ class Inventory(Twitch):
         Check for an network error where screen is not loaded
             -> Bool
         """
-        return (None == self._find_element_xpath("//h2[contains(text(), 'Drops')]"))
+        return not (self._find_element_xpath("//h4[contains(text(), 'Claimed')]") or self._find_element_xpath("//p[contains(text(), 'In Progress')]"))
