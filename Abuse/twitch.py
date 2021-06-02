@@ -402,10 +402,11 @@ class Stream(Twitch):
 
     def __check_stream_alive(self):
         """
-        Check if current stream is still live
+        Check if current stream is still live and dropping
             -> Bool
         """
-        if not self._find_element_xpath("//div[@class='channel-info-content']//p[contains(text(), 'LIVE')]"):
+        # Check stream live and dropping, some streams (smitegame) go 'offline' meaning no drops but still live
+        if not (self._find_element_xpath("//div[@class='channel-info-content']//p[contains(text(), 'LIVE')]") or self._find_element_xpath("//div[@class='channel-info-content']//a[@data-a-target='Drops Enabled']")):
             print(self.user.username, "-", datetime.now().strftime("%H:%M:%S"), "-",
                   "[!] Stream offline.")
             return False
