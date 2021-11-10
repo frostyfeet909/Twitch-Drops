@@ -6,77 +6,97 @@ import threading
 
 
 class Account:
-    """
-    Models a user account that stores username, password, phone number and cookies persistantly
-        username - Unique for Twitch so acts as an ID : String
-    """
-    file = path.join(path.dirname(path.realpath(__file__)),
-                     "resources", "users")
+    # TODO : Use collections.UserDict ???
+    """Models a user account.
 
-    def __init__(self, username):
+    Stores username, password, phone number and cookies persistantly.
+
+    Attributes:
+        username : str - Unique for Twitch so acts as an ID
+        admin : bool - Is the user an admin (for purposes of notifications)
+        lock : Lock - Use when changing account details e.g. cookies
+        _file_lock : Lock - Lock for saving and loading
+        _temporary : bool - Is this user account temporary
+    """
+
+    _file = path.join(path.dirname(path.realpath(__file__)), "resources", "users")
+
+    def __init__(self, username: str) -> None:
         self.username = username
         self.lock = threading.Lock()
-        self.__file_lock = threading.Lock()  # Simplify this
         self.password = None
         self.phone = None
         self.admin = None
         self.cookies = None
-        self.temporary = False
+        self._file_lock = threading.Lock()  # TODO : Simplify this
+        self._temporary = False
 
-    def __save(self):
-        """
-        Save the account
-        """
-        if self.temporary:
+    def _save(self) -> None:
+        """Save the account."""
+        if self._temporary:
             return
 
         # Format for json
-        data = {"password": self.password, "phone": self.phone,
-                "admin": self.admin, "cookies": self.cookies}
+        data = {
+            "password": self.password,
+            "phone": self.phone,
+            "admin": self.admin,
+            "cookies": self.cookies,
+        }
 
-        self.__file_lock.acquire()
-        with open(path.join(Account.file, self.username+".json"), "w") as file:
+        self._file_lock.acquire()
+        with open(path.join(Account._file, self.username + ".json"), "w") as file:
             json.dump(data, file)
-        self.__file_lock.release()
+        self._file_lock.release()
 
-    def delete(self):
+    def delete(self) -> None:
+        """Delete the account.
+
+        Generally due to incorrect data.
         """
-        Delete the account - generally due to incorrect data
-        """
-        if self.temporary:
+        if self._temporary:
             return
 
-        if not path.isfile(path.join(Account.file, self.username+".json")):
+        if not path.isfile(path.join(Account._file, self.username + ".json")):
             print("[!!] %s does not exsist" % self.username)
             raise FileNotFoundError
 
-        self.__file_lock.acquire()
-        os.remove(path.join(Account.file, self.username+".json"))
-        self.__file_lock.release()
+        self._file_lock.acquire()
+        os.remove(path.join(Account._file, self.username + ".json"))
+        self._file_lock.release()
 
-    def load(self):
+    def load(self) -> None:
+        """Load the account from storage.
+
+        Raises:
+            FileNotFoundError - If the user account is not stored
         """
-        Load the account from storage
-        """
-        if not path.isfile(path.join(Account.file, self.username+".json")):
+        if not path.isfile(path.join(Account._file, self.username + ".json")):
             print("[!!] %s does not exsist" % self.username)
             raise FileNotFoundError
 
-        self.__file_lock.acquire()
-        with open(path.join(Account.file, self.username+".json"), "r") as file:
+        self._file_lock.acquire()
+        with open(path.join(Account._file, self.username + ".json"), "r") as file:
             data = json.load(file)
 
         self.password = data["password"]
         self.phone = data["phone"]
         self.admin = data["admin"]
         self.cookies = data["cookies"]
-        self.__file_lock.release()
+        self._file_lock.release()
 
-    def create(self, password=None,  is_admin=False, phone_number=None, temporary=False):
+    def create(
+        self,
+        password: str = None,
+        is_admin: bool = False,
+        phone_number: str = None,
+        temporary: bool = False,
+    ) -> None:
+        """Create a fresh account.
+
+        May overwrite old account with same username.
         """
-        Create a fresh account (or overwrite old account with same username)
-        """
-        self.temporary = temporary
+        self._temporary = temporary
 
         if password == "":
             password = None
@@ -87,15 +107,15 @@ class Account:
         self.phone = phone_number
 
         # Extra safe
-        self.admin = (is_admin == True or str(
-            is_admin).strip().lower() == "true")
+        self.admin = is_admin == True or str(is_admin).strip().lower() == "true"
 
-        self.__save()
+        self._save()
 
-    def login(self, cookies):
-        """
-        Login account to Twitch - password is no longer needed
+    def login(self, cookies: list[dir]) -> None:
+        """Login account to Twitch.
+
+        When you got cookies, who needs a password?
         """
         self.cookies = cookies
         self.password = None
-        self.__save()
+        self._save()

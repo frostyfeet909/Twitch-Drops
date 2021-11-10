@@ -4,12 +4,8 @@ import twitch
 from utility import accounts
 
 
-def verify_account(username, password):
-    """
-    Verify the username and password are from a valid Twitch account
-        username,password - Username and password pair : String
-        username,password -> Bool
-    """
+def verify_account(username: str, password: str) -> bool:
+    """Verify the username and password are from a valid Twitch account."""
     print("[*] Verifying twitch account")
     # Create temporary account with associated username,password
     temp_account = account.Account(username)
@@ -20,12 +16,8 @@ def verify_account(username, password):
     return twitch_page.run()
 
 
-def verify_phone_number(phone_number):
-    """
-    Verify phone_number is a valid phone number
-        phone_number - Phone number to verify : String
-        phone_number -> Bool
-    """
+def verify_phone_number(phone_number: str) -> bool:
+    """Verify phone_number is a valid phone number."""
     print("[*] Verifying phone number")
     import phonenumbers  # importing previously imported modules has little to no overhead - safer to import here as some may not use twilio/phonenumbers
 
@@ -37,10 +29,16 @@ def verify_phone_number(phone_number):
     return phonenumbers.is_valid_number(number)
 
 
-def add_account(user_info=None):
-    """
-    Create a new account all user info is verified before saving - May be called from CLI
-        user_info - [username, password, is_admin, phone_number] Only required fields are username and password: Array
+def add_account(user_info: list[str, str, bool, str] = None) -> None:
+    """Create a new account.
+
+    All user info is verified before saving - May be called from CLI.
+
+    Args:
+        user_info : list - [username, password, is_admin, phone_number] Only required fields are username and password
+
+    Raises:
+        SystemExit - Informmation provided is invalid in some way, more info provided at runtime.
     """
     if user_info == None:
         user_info = []
@@ -50,8 +48,7 @@ def add_account(user_info=None):
         print("Password: ")
         user_info.append(input(">> "))
         print("Are they an admin (True/False)(May be left empty): ")
-        user_info.append(True if input(">> ").lower().strip()
-                         == "true" else False)
+        user_info.append(True if input(">> ").lower().strip() == "true" else False)
         print("Phone number (May be left empty):")
         user_info.append(input(">> "))
 
@@ -71,8 +68,7 @@ def add_account(user_info=None):
                 raise SystemExit
 
         elif len(user_info) > 2:
-            user_info[2] = (True if user_info[2].lower().strip()
-                            == "true" else False)
+            user_info[2] = True if user_info[2].lower().strip() == "true" else False
 
     # Update user account
     if any(person.username == user_info[0] for person in accounts.get_accounts()):

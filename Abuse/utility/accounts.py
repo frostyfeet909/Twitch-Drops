@@ -4,15 +4,16 @@ import account
 from os import path
 
 
-def get_accounts():
-    """
-    Return all created accounts.
-        accounts - Collection of account objects : Array
-        -> accounts
+def get_accounts() -> list:
+    """Return all created accounts.
+
+    Returns:
+        A collection of account objects.
     """
     accounts = []
-    folder = path.join(path.dirname(path.realpath(__file__)),
-                       "..", "resources", "users")
+    folder = path.join(
+        path.dirname(path.realpath(__file__)), "..", "resources", "users"
+    )
 
     if not path.isdir(folder):
         print("[!!] No users")

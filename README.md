@@ -13,7 +13,7 @@ Allows for multiple accounts to be processed simultaneously with persistant stor
    ```
 
 3. Install the latest stable version of the selenium [chrome webdriver](https://chromedriver.chromium.org/downloads) and place it in `Abuse\resources\webdrivers`.
-4. (Optional) If you have notifcations set on then on first run you will be prompted for your twilio information which can be set up at https://www.twilio.com/try-twilio.
+4. (Optional) If you have notifications set on then on first run you will be prompted for your twilio information which can be set up at https://www.twilio.com/try-twilio.
 
 ## Usage
 
@@ -37,6 +37,6 @@ me no know
 ## Todo
 
 - Bug fixes
-    - Do something with Amazon watch party streams, stems from some streamers not correctly categorising their streams
-    - Possible bug when checking if there are any redeemable rewards left, occurs after a connection error
+  - Do something with Amazon watch party streams, stems from some streamers not correctly categorising their streams
+  - Possible bug when checking if there are any redeemable rewards left, occurs after a connection error
 - Add a GUI

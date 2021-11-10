@@ -1,4 +1,4 @@
-# Methods for saving and retrieving cookies
+# Methods for saving and retrieving cookies - unused
 import json
 from os import path
 
@@ -10,7 +10,7 @@ def save_cookies(cookies, file_loc):
         file_loc - File to save cookies : String
         cookies, file_loc ->
     """
-    with open(file_loc, 'w') as file:
+    with open(file_loc, "w") as file:
         json.dump(cookies, file)
 
 
@@ -26,7 +26,7 @@ def load_cookies(file_loc):
         print("[!!] No cookies file")
         raise FileNotFoundError
 
-    with open(file_loc, 'r') as file:
+    with open(file_loc, "r") as file:
         cookies = json.load(file)
 
     return cookies
